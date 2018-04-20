@@ -1,0 +1,76 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Web API Date Test</title>
+</head>
+<body>
+    <div>
+        <h3>All intervals</h3>
+        <ul id="intervals" />
+    </div>
+    <div>
+        <h3>Add new interval</h3>
+        <input type="text" id="newBegin" placeholder="Begin date" />
+        <input type="text" id="newDue" placeholder="Due date" />
+        <input type="button" value="Add" onclick="postDate();"/>
+    </div>
+    <div>
+        <h3>Get items by interval</h3>
+        <input type="text" id="intervalBegin" placeholder="Begin date" />
+        <input type="text" id="intervalDue" placeholder="Due date" />
+        <input type="button" value="Search" onclick="find();" />
+        <ul id="intervalsList" />
+    </div>
+    <script src="Scripts/jquery-3.3.1.min.js"></script>
+    <script>
+        var uri = 'api/date';
+        $(document).ready(function () {
+            $.getJSON(uri)
+                .done(function (data) {
+                    $.each(data, function (key, item) {
+                        $('<li>', { text: formatItem(item) }).appendTo($('#intervals'));
+                    });
+                });
+        });
+
+        function formatItem(item) {
+            return 'Begin - ' + item.BeginDate + '; Due - ' + item.DueDate;
+        };
+
+        function find() {
+            var begin = $('#intervalBegin').val();
+            var due = $('#intervalDue').val();
+            $('#intervalsList').empty();
+            $.getJSON(uri + '?begin=' + begin + '&due=' + due)
+                .done(function (data) {
+                    $.each(data, function (key, item) {
+                        $('<li>', { text: formatItem(item) }).appendTo($('#intervalsList'));
+                    });
+                })
+                .fail(function (jqXHR, textStatus, err) {
+                    $('<li>', { text: 'Error: ' + err }).appendTo($('#intervalsList'));
+                });
+        };
+        function postDate() {
+            var Intervals = {
+                "BeginDate": $('#newBegin').val(),
+                "DueDate": $('#newDue').val()
+            };
+            $.ajax({
+                type: "POST",
+                url: "http://localhost:50099/api/date/PostInterval",
+                data: JSON.stringify(Intervals),
+                contentType: "application/json;charset=utf-8",
+                processData: true,
+                success: function (data, status, xhr) {
+                    console.log("The result is: " + status);
+                },
+                error: function (xhr) {
+                    console.log(xhr.responseText);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
